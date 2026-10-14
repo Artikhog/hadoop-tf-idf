@@ -1,0 +1,55 @@
+{
+  "capturedAt": "2026-10-14",
+  "host": {
+    "model": "MacBook Air (Mac17,4)",
+    "chip": "Apple M5",
+    "architecture": "arm64",
+    "cpuCores": 10,
+    "memoryGiB": 16,
+    "os": "macOS 26.6.2 (25G83)",
+    "initialFilesystemAvailableGiB": 142,
+    "filesystemAvailableAfterFailedAttemptGiB": 39
+  },
+  "software": {
+    "java": "Eclipse Temurin OpenJDK 21.0.4+7 LTS",
+    "gradle": "9.7.1",
+    "hadoop": "3.5.0 linux-aarch64",
+    "python": "3.9.6",
+    "matplotlib": "3.9.4"
+  },
+  "cluster": {
+    "deployment": "Docker Compose on the same physical host",
+    "nameNodes": 1,
+    "resourceManagers": 1,
+    "dataNodes": 3,
+    "nodeManagers": 3,
+    "historyServers": 1,
+    "hdfsReplication": 3,
+    "twoGiBOutputReplicationAfterMeasurement": 1,
+    "hdfsBlockBytes": 134217728,
+    "initialHdfsAvailableGiB": 417.39,
+    "recovery": "After a failed Hadoop 1000 MiB attempt, the operator recreated Docker volumes and reran that slot on a fresh cluster with the same Compose/Hadoop configuration; fresh HDFS available space was 760.57 GiB"
+  },
+  "datasets": [
+    {
+      "path": "data/samples/fineweb-100mb.tsv",
+      "bytes": 104856796,
+      "sha256": "52b6d2d6457f95cc6d1c60830c1b10d8801a44f739c23ffe4978d08ae1489b78"
+    },
+    {
+      "path": "data/samples/fineweb-500mb.tsv",
+      "bytes": 524287150,
+      "sha256": "fe269c48705a4aa7fbcacd0361c4e47805136559bc36e3a1d07bc1e37dc9821e"
+    },
+    {
+      "path": "data/samples/fineweb-1gb.tsv",
+      "bytes": 1073738702,
+      "sha256": "2846c81d523f452b61f5a1692a7b2436691c2cffd5ebeb3167a388b94bd9b771"
+    },
+    {
+      "path": "data/samples/fineweb-2gb.tsv",
+      "bytes": 2147483020,
+      "sha256": "4f174b3c592337976131d16bda61a61643e63f1464f4cfb8cd7f2568aa120ce7"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "absoluteTolerance": 1e-09,
+  "local": 66908036,
+  "hadoop": 66908036,
+  "localOnly": 0,
+  "hadoopOnly": 0,
+  "valueMismatches": 0,
+  "examples": []
+}

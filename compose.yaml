@@ -1,0 +1,160 @@
+name: hadoop-tfidf
+
+x-hadoop-common: &hadoop-common
+  image: ghcr.io/apache/hadoop:3.5.0
+  platform: linux/arm64
+  entrypoint: ["/bin/bash", "-c"]
+  networks:
+    - hadoop
+  restart: unless-stopped
+  volumes:
+    - ./docker/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+    - ./docker/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+    - ./docker/hadoop/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+    - ./docker/hadoop/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+
+services:
+  init-permissions:
+    image: ghcr.io/apache/hadoop:3.5.0
+    user: root
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        chown -R hadoop:hadoop /volumes/namenode
+        chown -R hadoop:hadoop /volumes/worker1
+        chown -R hadoop:hadoop /volumes/worker2
+        chown -R hadoop:hadoop /volumes/worker3
+    volumes:
+      - namenode-data:/volumes/namenode
+      - worker1-data:/volumes/worker1
+      - worker2-data:/volumes/worker2
+      - worker3-data:/volumes/worker3
+
+
+  namenode:
+    <<: *hadoop-common
+    hostname: namenode
+    command:
+      - |
+        if [ ! -f /hadoop/dfs/name/current/VERSION ]; then
+          hdfs namenode -format -nonInteractive || exit 1
+        fi
+        exec hdfs namenode
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - ./docker/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./docker/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./docker/hadoop/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./docker/hadoop/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - namenode-data:/hadoop/dfs/name
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+
+  resourcemanager:
+    <<: *hadoop-common
+    hostname: resourcemanager
+    command:
+      - exec yarn resourcemanager
+    ports:
+      - "8088:8088"
+    depends_on:
+      - namenode
+
+  historyserver:
+    <<: *hadoop-common
+    hostname: historyserver
+    command:
+      - exec mapred historyserver
+    ports:
+      - "19888:19888"
+    depends_on:
+      - namenode
+      - resourcemanager
+
+  worker-1:
+    <<: *hadoop-common
+    hostname: worker-1
+    command:
+      - |
+        hdfs datanode &
+        dn=$!
+        yarn nodemanager &
+        nm=$!
+        trap 'kill "$$dn" "$$nm" 2>/dev/null || true' TERM INT
+        wait -n "$$dn" "$$nm"
+    volumes:
+      - ./docker/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./docker/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./docker/hadoop/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./docker/hadoop/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - worker1-data:/hadoop/dfs/data
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+      namenode:
+        condition: service_started
+      resourcemanager:
+        condition: service_started
+
+  worker-2:
+    <<: *hadoop-common
+    hostname: worker-2
+    command:
+      - |
+        hdfs datanode &
+        dn=$!
+        yarn nodemanager &
+        nm=$!
+        trap 'kill "$$dn" "$$nm" 2>/dev/null || true' TERM INT
+        wait -n "$$dn" "$$nm"
+    volumes:
+      - ./docker/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./docker/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./docker/hadoop/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./docker/hadoop/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - worker2-data:/hadoop/dfs/data
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+      namenode:
+        condition: service_started
+      resourcemanager:
+        condition: service_started
+
+  worker-3:
+    <<: *hadoop-common
+    hostname: worker-3
+    command:
+      - |
+        hdfs datanode &
+        dn=$!
+        yarn nodemanager &
+        nm=$!
+        trap 'kill "$$dn" "$$nm" 2>/dev/null || true' TERM INT
+        wait -n "$$dn" "$$nm"
+    volumes:
+      - ./docker/hadoop/core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      - ./docker/hadoop/hdfs-site.xml:/opt/hadoop/etc/hadoop/hdfs-site.xml:ro
+      - ./docker/hadoop/yarn-site.xml:/opt/hadoop/etc/hadoop/yarn-site.xml:ro
+      - ./docker/hadoop/mapred-site.xml:/opt/hadoop/etc/hadoop/mapred-site.xml:ro
+      - worker3-data:/hadoop/dfs/data
+    depends_on:
+      init-permissions:
+        condition: service_completed_successfully
+      namenode:
+        condition: service_started
+      resourcemanager:
+        condition: service_started
+
+networks:
+  hadoop:
+    driver: bridge
+
+volumes:
+  namenode-data:
+  worker1-data:
+  worker2-data:
+  worker3-data:
